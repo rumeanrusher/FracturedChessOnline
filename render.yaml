@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: fractured-chess-server
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: fractured-chess-db
+          property: connectionString
+      - key: CORS_ORIGIN
+        value: "*"
+
+databases:
+  - name: fractured-chess-db
+    plan: free
+    databaseName: fractured_chess
+    user: fractured_chess_user
