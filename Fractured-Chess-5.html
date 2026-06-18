@@ -180,6 +180,22 @@ body{
 .badge-soon{background:rgba(255,193,7,.12);color:#f0c040;border:1px solid rgba(255,193,7,.3);}
 .badge-live{background:rgba(129,182,76,.15);color:var(--accent);border:1px solid rgba(129,182,76,.35);}
 
+/* AUTH SCREEN */
+#screen-auth{background:var(--bg);justify-content:center;padding:24px;}
+.auth-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px 22px;max-width:340px;width:100%;}
+.auth-title{font-size:1.4rem;font-weight:700;color:var(--text);text-align:center;margin-bottom:20px;}
+.auth-title span{color:var(--accent);}
+.auth-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-family:inherit;font-size:.9rem;color:var(--text);margin-bottom:12px;}
+.auth-input::placeholder{color:var(--text-dim);}
+.auth-input:focus{outline:none;border-color:var(--accent);}
+.auth-btn{width:100%;font-family:inherit;font-size:.95rem;font-weight:700;padding:13px;border-radius:8px;border:none;cursor:pointer;background:var(--accent);color:#fff;margin-top:4px;}
+.auth-btn.sec{background:transparent;color:var(--text-dim);border:1px solid var(--border);margin-top:8px;}
+.auth-status{font-size:.8rem;color:var(--text-dim);text-align:center;margin-top:12px;min-height:20px;}
+.auth-user{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:12px;}
+.auth-user-name{font-weight:600;color:var(--text);}
+.auth-user-status{font-size:.7rem;color:var(--accent);}
+.auth-logout-btn{font-family:inherit;font-size:.7rem;padding:4px 12px;border-radius:4px;border:1px solid var(--border);background:var(--surface2);color:var(--text-dim);cursor:pointer;}
+
 /* MODE SELECT MODAL */
 #mode-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:600;display:none;align-items:center;justify-content:center;padding:20px;}
 #mode-modal.show{display:flex;}
@@ -404,7 +420,7 @@ body{
 </div>
 
 <!-- ════ MAIN MENU ════ -->
-<div class="screen" id="screen-main">
+<div class="screen show" id="screen-main">
   <div class="menu-logo-area">
     <div class="menu-board-icon" id="menu-logo-grid"></div>
     <div class="menu-title">Fractured <span>Chess</span></div>
@@ -414,6 +430,10 @@ body{
     <button class="menu-btn primary" onclick="goPlay()">
       <span class="menu-btn-icon">♟</span>
       <span class="menu-btn-text"><span class="menu-btn-label">Play</span><span class="menu-btn-sub">Start a new game</span></span>
+    </button>
+    <button class="menu-btn secondary" onclick="showScreen('screen-auth')">
+      <span class="menu-btn-icon">🔑</span>
+      <span class="menu-btn-text"><span class="menu-btn-label">Account</span><span class="menu-btn-sub" id="menu-auth-status">Login or Register</span></span>
     </button>
     <button class="menu-btn secondary" onclick="showScreen('screen-leaderboard')">
       <span class="menu-btn-icon">🏆</span>
@@ -428,7 +448,38 @@ body{
       <span class="menu-btn-text"><span class="menu-btn-label">Credits</span><span class="menu-btn-sub">About the game</span></span>
     </button>
   </div>
-  <div class="menu-version">v0.2.0 — Alpha</div>
+  <div class="menu-version">v0.3.0 — Alpha (Online Beta)</div>
+</div>
+
+<!-- ════ AUTH SCREEN ════ -->
+<div class="screen" id="screen-auth">
+  <div style="width:100%;max-width:480px;padding:14px 16px 10px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
+    <button class="back-btn" onclick="goMain()">← Back</button>
+    <span class="play-header-title">Account</span>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;width:100%;padding:20px;">
+    <div class="auth-box">
+      <div class="auth-title">Fractured <span>Chess</span></div>
+      <div id="auth-logged-in" style="display:none;">
+        <div class="auth-user">
+          <div><div class="auth-user-name" id="auth-username">Player</div><div class="auth-user-status">✅ Logged in</div></div>
+          <button class="auth-logout-btn" onclick="logout()">Logout</button>
+        </div>
+        <div style="margin-top:12px;text-align:center;color:var(--text-dim);font-size:.82rem;">
+          You're ready to play online!<br>
+          <span style="font-size:.7rem;color:var(--accent);">Your games will be saved to the cloud.</span>
+        </div>
+        <button class="auth-btn sec" onclick="goPlay()" style="margin-top:16px;">← Back to Play</button>
+      </div>
+      <div id="auth-logged-out">
+        <input class="auth-input" id="auth-username-input" placeholder="Username" type="text">
+        <input class="auth-input" id="auth-password-input" placeholder="Password" type="password">
+        <div class="auth-status" id="auth-status"></div>
+        <button class="auth-btn" onclick="handleLogin()">Login</button>
+        <button class="auth-btn sec" onclick="handleRegister()">Create Account</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ════ PLAY SCREEN ════ -->
@@ -439,7 +490,7 @@ body{
   </div>
   <div class="play-sections">
     <div class="play-section-label">⚔ Local</div>
-    <button class="play-option" onclick="openModeModal()">
+    <button class="play-option" onclick="openModeModal('local')">
       <span class="play-option-icon">🪑</span>
       <span class="play-option-info">
         <span class="play-option-name">Local Mode</span>
@@ -452,16 +503,14 @@ body{
       <span class="play-option-info"><span class="play-option-name">Bot Mode</span><span class="play-option-desc">Play against an AI opponent.</span></span>
       <span class="play-option-badge badge-soon">Soon</span>
     </button>
-    <div class="play-section-label">🌐 Online (Coming Soon)</div>
-    <button class="play-option locked" onclick="toastMsg('Ranked matchmaking requires online backend — coming soon!')">
+    <div class="play-section-label">🌐 Online</div>
+    <button class="play-option" onclick="openModeModal('online')">
       <span class="play-option-icon">🔍</span>
-      <span class="play-option-info"><span class="play-option-name">Ranked Match</span><span class="play-option-desc">Compete for ELO rating. Requires account.</span></span>
-      <span class="play-option-badge badge-soon">Soon</span>
-    </button>
-    <button class="play-option locked" onclick="toastMsg('Unranked matchmaking coming soon!')">
-      <span class="play-option-icon">🎲</span>
-      <span class="play-option-info"><span class="play-option-name">Unranked Match</span><span class="play-option-desc">Casual online match, no ELO change.</span></span>
-      <span class="play-option-badge badge-soon">Soon</span>
+      <span class="play-option-info">
+        <span class="play-option-name">Online Match</span>
+        <span class="play-option-desc" id="online-desc">Find an opponent online. ELO rated.</span>
+      </span>
+      <span class="play-option-badge badge-live" id="online-badge">Live</span>
     </button>
     <button class="play-option locked" onclick="toastMsg('Private rooms coming soon!')">
       <span class="play-option-icon">🔒</span>
@@ -527,7 +576,7 @@ body{
   <div class="simple-screen-content">
     <div class="coming-soon-icon">📜</div>
     <div class="coming-soon-title">Fractured Chess</div>
-    <div class="coming-soon-sub">A chess variant where the board itself plays against you.<br><br>v0.2.0 Alpha<br><br>Built with ♟ and chaos theory.</div>
+    <div class="coming-soon-sub">A chess variant where the board itself plays against you.<br><br>v0.3.0 Alpha — Online Beta<br><br>Built with ♟ and chaos theory.</div>
   </div>
 </div>
 
@@ -566,12 +615,12 @@ body{
 <!-- ════ FRIENDS PANEL ════ -->
 <div id="panel-friends">
   <div class="elo-strip">
-    <div class="elo-avatar">You</div>
+    <div class="elo-avatar" id="friend-avatar">You</div>
     <div class="elo-info">
-      <div class="elo-name">Player One</div>
-      <div class="elo-sub">Local Player · 0 games played</div>
+      <div class="elo-name" id="friend-name">Player One</div>
+      <div class="elo-sub" id="friend-sub">Local Player · 0 games played</div>
     </div>
-    <div class="elo-badge">ELO 1200</div>
+    <div class="elo-badge" id="friend-elo">ELO 1200</div>
   </div>
   <div class="panel-header" style="padding-top:10px;">
     <input class="panel-search" placeholder="Search friends…" type="text" oninput="filterFriends(this.value)">
@@ -659,15 +708,15 @@ body{
   </div>
   <div style="padding:20px 16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;flex:1;">
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center;">
-      <div style="font-size:2.5rem;font-weight:700;color:var(--accent);">1200</div>
-      <div style="font-size:.78rem;color:var(--text-dim);margin-top:4px;">ELO Rating · Unranked</div>
+      <div style="font-size:2.5rem;font-weight:700;color:var(--accent);" id="rank-elo">1200</div>
+      <div style="font-size:.78rem;color:var(--text-dim);margin-top:4px;" id="rank-status">ELO Rating · Unranked</div>
       <div style="margin-top:12px;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;">
         <div style="width:35%;height:100%;background:var(--accent);border-radius:3px;"></div>
       </div>
       <div style="font-size:.65rem;color:var(--text-dim);margin-top:5px;">350 ELO to reach Bronze</div>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;">
-      <div style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px;">Local Stats (This Device)</div>
+      <div style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px;">Stats</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center;">
         <div><div style="font-size:1.4rem;font-weight:700;color:var(--text);" id="stat-wins">0</div><div style="font-size:.65rem;color:var(--text-dim);">Wins</div></div>
         <div><div style="font-size:1.4rem;font-weight:700;color:var(--text);" id="stat-losses">0</div><div style="font-size:.65rem;color:var(--text-dim);">Losses</div></div>
@@ -694,7 +743,7 @@ body{
         </div>
       </div>
     </div>
-    <div style="font-size:.7rem;color:var(--text-dim);text-align:center;padding:4px 0 16px;">Online ranked matches require server backend — coming soon.</div>
+    <div style="font-size:.7rem;color:var(--text-dim);text-align:center;padding:4px 0 16px;">Online matches sync with your account.</div>
   </div>
 </div>
 
@@ -702,10 +751,20 @@ body{
 
 <script>
 // ═══════════════════════════════════════
+// BACKEND CONFIGURATION
+// ═══════════════════════════════════════
+const API_URL = 'https://fractured-chess-server.onrender.com';
+const WS_URL = 'wss://fractured-chess-server.onrender.com';
+
+// ═══════════════════════════════════════
 // GLOBAL VARIABLES
 // ═══════════════════════════════════════
 let S = null;                    // Game state
 const spawnAnimations = {};      // Track animation frames for spawning tiles
+let socket = null;
+let currentGameId = null;
+let isOnlineGame = false;
+let gameModeType = 'local'; // 'local' or 'online'
 
 // CONSTANTS
 const UNI={wK:'♔',wQ:'♕',wR:'♖',wB:'♗',wN:'♘',wP:'♙',bK:'♚',bQ:'♛',bR:'♜',bB:'♝',bN:'♞',bP:'♟'};
@@ -734,6 +793,417 @@ const MODES=[
   {id:'barebone',name:'Classic Chess',icon:'👑',desc:'No dice. No mutations. Just chess.'},
 ];
 let selectedMode='classic';
+let selectedModeType = 'local';
+
+// ═══════════════════════════════════════
+// AUTH FUNCTIONS
+// ═══════════════════════════════════════
+async function register(username, password) {
+    try {
+        const response = await fetch(`${API_URL}/api/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await response.json();
+        if (data.token) {
+            localStorage.setItem('authToken', data.token);
+            localStorage.setItem('username', username);
+            updateAuthUI();
+            toastMsg('Account created! Welcome ' + username);
+            return true;
+        }
+        toastMsg(data.message || 'Registration failed');
+        return false;
+    } catch (error) {
+        console.error('Register error:', error);
+        toastMsg('Connection error. Is the server running?');
+        return false;
+    }
+}
+
+async function login(username, password) {
+    try {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await response.json();
+        if (data.token) {
+            localStorage.setItem('authToken', data.token);
+            localStorage.setItem('username', username);
+            updateAuthUI();
+            toastMsg('Welcome back, ' + username + '!');
+            return true;
+        }
+        toastMsg(data.message || 'Login failed');
+        return false;
+    } catch (error) {
+        console.error('Login error:', error);
+        toastMsg('Connection error. Is the server running?');
+        return false;
+    }
+}
+
+function getCurrentUser() {
+    return {
+        username: localStorage.getItem('username'),
+        token: localStorage.getItem('authToken')
+    };
+}
+
+function logout() {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('username');
+    if (socket) {
+        socket.close();
+        socket = null;
+    }
+    currentGameId = null;
+    isOnlineGame = false;
+    updateAuthUI();
+    toastMsg('Logged out');
+    goMain();
+}
+
+function updateAuthUI() {
+    const user = getCurrentUser();
+    const loggedIn = document.getElementById('auth-logged-in');
+    const loggedOut = document.getElementById('auth-logged-out');
+    const status = document.getElementById('menu-auth-status');
+    
+    if (user.token) {
+        loggedIn.style.display = 'block';
+        loggedOut.style.display = 'none';
+        document.getElementById('auth-username').textContent = user.username;
+        document.getElementById('friend-name').textContent = user.username;
+        document.getElementById('friend-avatar').textContent = user.username.substring(0,2).toUpperCase();
+        document.getElementById('online-desc').textContent = 'Find an opponent online. ELO rated.';
+        document.getElementById('online-badge').textContent = 'Live';
+        status.textContent = '👤 ' + user.username;
+        
+        // Try to get ELO from server
+        fetchUserStats();
+    } else {
+        loggedIn.style.display = 'none';
+        loggedOut.style.display = 'block';
+        document.getElementById('friend-name').textContent = 'Player One';
+        document.getElementById('friend-avatar').textContent = 'You';
+        document.getElementById('online-desc').textContent = 'Login to play online matches.';
+        document.getElementById('online-badge').textContent = 'Login';
+        status.textContent = 'Login or Register';
+        document.getElementById('rank-elo').textContent = '1200';
+        document.getElementById('rank-status').textContent = 'ELO Rating · Unranked';
+    }
+}
+
+async function fetchUserStats() {
+    const user = getCurrentUser();
+    if (!user.token) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/api/user/stats`, {
+            headers: {
+                'Authorization': `Bearer ${user.token}`
+            }
+        });
+        const data = await response.json();
+        if (data.elo) {
+            document.getElementById('rank-elo').textContent = data.elo;
+            document.getElementById('friend-elo').textContent = 'ELO ' + data.elo;
+            document.getElementById('rank-status').textContent = 'ELO Rating · ' + (data.elo >= 2100 ? 'Diamond' : 
+                                                                               data.elo >= 1900 ? 'Gold' :
+                                                                               data.elo >= 1700 ? 'Silver' :
+                                                                               data.elo >= 1550 ? 'Bronze' : 'Unranked');
+            if (data.wins !== undefined) {
+                document.getElementById('stat-wins').textContent = data.wins || 0;
+                document.getElementById('stat-losses').textContent = data.losses || 0;
+                document.getElementById('stat-draws').textContent = data.draws || 0;
+            }
+        }
+    } catch (error) {
+        console.error('Failed to fetch user stats:', error);
+    }
+}
+
+async function handleLogin() {
+    const username = document.getElementById('auth-username-input').value.trim();
+    const password = document.getElementById('auth-password-input').value;
+    const status = document.getElementById('auth-status');
+    
+    if (!username || !password) {
+        status.textContent = 'Please fill in all fields';
+        return;
+    }
+    
+    status.textContent = 'Logging in...';
+    const success = await login(username, password);
+    if (success) {
+        status.textContent = '';
+        document.getElementById('auth-username-input').value = '';
+        document.getElementById('auth-password-input').value = '';
+        setTimeout(() => goMain(), 1000);
+    } else {
+        status.textContent = 'Login failed. Check credentials.';
+    }
+}
+
+async function handleRegister() {
+    const username = document.getElementById('auth-username-input').value.trim();
+    const password = document.getElementById('auth-password-input').value;
+    const status = document.getElementById('auth-status');
+    
+    if (!username || !password) {
+        status.textContent = 'Please fill in all fields';
+        return;
+    }
+    if (password.length < 6) {
+        status.textContent = 'Password must be at least 6 characters';
+        return;
+    }
+    
+    status.textContent = 'Creating account...';
+    const success = await register(username, password);
+    if (success) {
+        status.textContent = '';
+        document.getElementById('auth-username-input').value = '';
+        document.getElementById('auth-password-input').value = '';
+        setTimeout(() => goMain(), 1000);
+    } else {
+        status.textContent = 'Registration failed. Username may be taken.';
+    }
+}
+
+// ═══════════════════════════════════════
+// WEBSOCKET FUNCTIONS
+// ═══════════════════════════════════════
+function connectWebSocket(gameId) {
+    const user = getCurrentUser();
+    if (!user.token) {
+        toastMsg('Please login first!');
+        return false;
+    }
+
+    currentGameId = gameId;
+    isOnlineGame = true;
+    
+    try {
+        socket = new WebSocket(`${WS_URL}?token=${user.token}`);
+        
+        socket.onopen = () => {
+            console.log('WebSocket connected');
+            socket.send(JSON.stringify({
+                type: 'join_game',
+                gameId: gameId
+            }));
+            toastMsg('Connected to game server');
+        };
+
+        socket.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                handleWebSocketMessage(data);
+            } catch (e) {
+                console.error('Failed to parse WebSocket message:', e);
+            }
+        };
+
+        socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            toastMsg('Connection error');
+        };
+
+        socket.onclose = () => {
+            console.log('WebSocket disconnected');
+            if (S && !S.gameOver) {
+                toastMsg('Disconnected from server');
+            }
+        };
+        
+        return true;
+    } catch (error) {
+        console.error('WebSocket connection error:', error);
+        toastMsg('Failed to connect to game server');
+        return false;
+    }
+}
+
+function handleWebSocketMessage(data) {
+    console.log('WebSocket message:', data);
+    switch(data.type) {
+        case 'game_state':
+            updateGameState(data.state);
+            break;
+        case 'move_made':
+            applyOpponentMove(data.move);
+            break;
+        case 'dice_roll':
+            applyDiceRoll(data.dice);
+            break;
+        case 'game_over':
+            handleGameOver(data.result);
+            break;
+        case 'error':
+            toastMsg(data.message);
+            break;
+        case 'joined':
+            toastMsg('Joined game! Waiting for opponent...');
+            break;
+        case 'opponent_joined':
+            toastMsg('Opponent joined! Game starting...');
+            break;
+        default:
+            console.log('Unknown message type:', data.type);
+    }
+}
+
+function updateGameState(state) {
+    // Update the local game state from server
+    if (state.board) {
+        S.board = state.board;
+        S.voidSet = new Set(state.voidSet || []);
+        S.cur = state.cur || 'w';
+        S.phase = state.phase || 'move';
+        S.capW = state.capW || [];
+        S.capB = state.capB || [];
+        S.inCheck = state.inCheck || false;
+        S.gameOver = state.gameOver || false;
+        S.selected = null;
+        S.legal = [];
+        render();
+        updateBars();
+        if (S.gameOver) {
+            handleGameOver(state.result || {});
+        }
+    }
+}
+
+function applyOpponentMove(move) {
+    if (!S) return;
+    // Apply the move locally
+    const {from, to, promotion} = move;
+    const piece = gP(from[0], from[1]);
+    if (!piece) return;
+    
+    const capture = gP(to[0], to[1]);
+    if (capture) {
+        (pC(capture) === 'w' ? S.capW : S.capB).push(capture);
+    }
+    
+    sP(to[0], to[1], piece);
+    sP(from[0], from[1], null);
+    
+    if (promotion) {
+        sP(to[0], to[1], pC(piece) + promotion);
+    }
+    
+    S.lastFrom = from;
+    S.lastTo = to;
+    S.cur = S.cur === 'w' ? 'b' : 'w';
+    S.selected = null;
+    S.legal = [];
+    S.phase = 'move';
+    
+    // Check for game over
+    checkState();
+    render();
+    updateBars();
+}
+
+function applyDiceRoll(dice) {
+    if (!S) return;
+    if (dice && dice.col !== undefined && dice.row !== undefined) {
+        document.getElementById('dx-val').textContent = dice.col + 1;
+        document.getElementById('dy-val').textContent = dice.row + 1;
+        document.getElementById('dice-msg').textContent = `🎲 Dice landed on ${dice.col+1},${dice.row+1}`;
+        S.lastDiceTarget = dice;
+        
+        // Glow effect
+        const cells = document.querySelectorAll('.cell');
+        cells.forEach(cell => {
+            const ck = cell.dataset.ck;
+            if (ck) {
+                const [c, r] = ck.split(',').map(Number);
+                if (c === dice.col && r === dice.row) {
+                    cell.classList.add('dice-glow');
+                    setTimeout(() => cell.classList.remove('dice-glow'), 600);
+                }
+            }
+        });
+    }
+}
+
+function handleGameOver(result) {
+    S.gameOver = true;
+    const winner = result.winner;
+    if (winner === 'w') {
+        localStats.wins++;
+        saveStats();
+        showModal('👑', 'You Win!', 'Congratulations!');
+    } else if (winner === 'b') {
+        localStats.losses++;
+        saveStats();
+        showModal('💀', 'You Lose', 'Better luck next time!');
+    } else {
+        localStats.draws++;
+        saveStats();
+        showModal('🤝', 'Draw', 'The game ended in a draw.');
+    }
+    updateStatDisplay();
+}
+
+function sendMoveToServer(move) {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+        toastMsg('Not connected to server');
+        return false;
+    }
+
+    socket.send(JSON.stringify({
+        type: 'make_move',
+        gameId: currentGameId,
+        move: move
+    }));
+    return true;
+}
+
+async function createOnlineGame(mode = 'classic') {
+    const user = getCurrentUser();
+    if (!user.token) {
+        toastMsg('Please login first!');
+        showScreen('screen-auth');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/api/games/create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.token}`
+            },
+            body: JSON.stringify({ mode })
+        });
+        const data = await response.json();
+        if (data.gameId) {
+            if (connectWebSocket(data.gameId)) {
+                // Wait for WebSocket to connect then start game
+                setTimeout(() => {
+                    showScreen(null);
+                    document.getElementById('bottom-nav').classList.add('show');
+                    hideAllPanels();
+                    setActiveTab('tab-game');
+                    initGame('online');
+                }, 500);
+            }
+        } else {
+            toastMsg(data.message || 'Failed to create game');
+        }
+    } catch (error) {
+        console.error('Create game error:', error);
+        toastMsg('Failed to create game. Is the server running?');
+    }
+}
 
 // ═══════════════════════════════════════
 // SPRITES
@@ -821,7 +1291,46 @@ function tileSrc(key){return SPRITES[TILE[key]]||'';}
 let autoTimer=null;
 function clearAuto(){if(autoTimer){clearTimeout(autoTimer);autoTimer=null;}}
 
-function initGame(){
+function initGame(type = 'local') {
+  gameModeType = type;
+  
+  if (type === 'online') {
+    // Online game - just set up empty state and wait for WebSocket
+    S = {
+      board: {},
+      voidSet: new Set(),
+      pieceGraveyard: {},
+      cur: 'w',
+      phase: 'move',
+      selected: null,
+      legal: [],
+      lastFrom: null,
+      lastTo: null,
+      diceX: null,
+      diceY: null,
+      capW: [],
+      capB: [],
+      enPassant: null,
+      castling: {wK:true,wQ:true,bK:true,bQ:true},
+      gameOver: false,
+      inCheck: false,
+      flipped: false,
+      locked: false,
+      lastDiceTarget: null,
+      lastDiceCaptured: null,
+      mode: selectedMode,
+      fogActive: selectedMode==='fog',
+      pendingMutations: [],
+      imminentMutations: [],
+    };
+    resetDiceUI();
+    render();
+    updateBars();
+    toastMsg('Waiting for opponent...');
+    return;
+  }
+
+  // Local game initialization
   clearAuto();
   closeModal();
   hidePassing();
@@ -1045,11 +1554,36 @@ function isPawnPromo(col,row,color){
 
 function cellClick(col,row){
   if(S.gameOver||S.phase!=='move'||S.locked) return;
+  
+  if (isOnlineGame && S.cur !== 'w') {
+    toastMsg('Wait for your opponent\'s move');
+    return;
+  }
+  
   const piece=gP(col,row);
   if(S.selected){
     const[sc,sr]=S.selected;
     const move=S.legal.find(m=>m.col===col&&m.row===row);
-    if(move){stopHintAnim();doMove(sc,sr,move);return;}
+    if(move){
+      stopHintAnim();
+      
+      if (isOnlineGame) {
+        // Send move to server
+        const moveData = {
+          from: [sc, sr],
+          to: [col, row],
+          promotion: move.promotion || null
+        };
+        if (sendMoveToServer(moveData)) {
+          S.locked = true;
+          toastMsg('Move sent... waiting for opponent');
+        }
+        return;
+      }
+      
+      doMove(sc,sr,move);
+      return;
+    }
     S.selected=null;S.legal=[];stopHintAnim();
   }
   if(piece&&pC(piece)===S.cur){
@@ -1091,7 +1625,7 @@ function afterMove(){
 
   if(S.mode==='barebone'){
     render();updateBars();
-    beginPassing();
+    if (!isOnlineGame) beginPassing();
     return;
   }
 
@@ -1099,7 +1633,7 @@ function afterMove(){
 
   render();updateBars();
 
-  rollDeferredDice();
+  if (!isOnlineGame) rollDeferredDice();
 }
 
 function showPromo(color,col,row){
@@ -1254,6 +1788,10 @@ function findNearest(targetCol,targetRow){
 
 function beginPassing(){
   if(S.gameOver) return;
+  if (isOnlineGame) {
+    // In online games, we don't use pass screen
+    return;
+  }
   const next=S.cur==='w'?'b':'w';
   document.getElementById('pi').textContent=next==='w'?'♔':'♚';
   document.getElementById('pt').textContent=`${next==='w'?'White':'Black'}'s Turn`;
@@ -1465,6 +2003,7 @@ function colLabel(c){
 }
 
 function updateBars(){
+  if (!S) return;
   const cur=S.cur,opp=cur==='w'?'b':'w';
   document.getElementById('name-bot').textContent=cur==='w'?'White ♔':'Black ♚';
   document.getElementById('name-top').textContent=opp==='w'?'White ♔':'Black ♚';
@@ -1507,11 +2046,20 @@ function showModal(icon,title,msg){
   document.getElementById('modal').classList.add('show');
 }
 function closeModal(){document.getElementById('modal').classList.remove('show');}
-function confirmNew(){goMain();}
+function confirmNew(){
+  if (isOnlineGame) {
+    if (socket) socket.close();
+    socket = null;
+    currentGameId = null;
+    isOnlineGame = false;
+  }
+  goMain();
+}
 
-function openModeModal(){
-  const container=document.getElementById('mode-options');
-  container.innerHTML='';
+function openModeModal(type = 'local') {
+  selectedModeType = type;
+  const container = document.getElementById('mode-options');
+  container.innerHTML = '';
   for(const m of MODES){
     const div=document.createElement('div');
     div.className='mode-option'+(m.id===selectedMode?' active':'');
@@ -1532,7 +2080,12 @@ function startWithMode(){
   document.getElementById('bottom-nav').classList.add('show');
   hideAllPanels();
   setActiveTab('tab-game');
-  initGame();
+  
+  if (selectedModeType === 'online') {
+    createOnlineGame(selectedMode);
+  } else {
+    initGame('local');
+  }
 }
 
 const FAKE_PLAYERS=[
@@ -1647,6 +2200,7 @@ function goMain(){
   showScreen('screen-main');
   document.getElementById('bottom-nav').classList.remove('show');
   hideAllPanels();
+  updateAuthUI();
 }
 function goPlay(){showScreen('screen-play');}
 function goSettings(){showScreen('screen-settings');}
@@ -1657,7 +2211,7 @@ function startLocalGame(){
   document.getElementById('bottom-nav').classList.add('show');
   hideAllPanels();
   setActiveTab('tab-game');
-  initGame();
+  initGame('local');
 }
 function showTab(tabId){
   setActiveTab(tabId);
@@ -1731,6 +2285,7 @@ window.addEventListener('load',()=>{
   renderLeaderboard();
   updateStatDisplay();
   buildMenuLogo();
+  updateAuthUI();
 });
 
 function buildMenuLogo(){
@@ -1764,4 +2319,4 @@ function buildMenuLogo(){
 }
 </script>
 </body>
-</html>
+  </html>
