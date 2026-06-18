@@ -14,6 +14,7 @@ const friendRoutes = require('./routes/friends');
 const messageRoutes = require('./routes/messages');
 
 const app = express();
+app.use(cors());
 const server = http.createServer(app);
 
 const corsOrigin = process.env.CORS_ORIGIN === '*' || !process.env.CORS_ORIGIN
