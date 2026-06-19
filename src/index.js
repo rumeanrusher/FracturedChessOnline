@@ -1,6 +1,7 @@
 // index.js — main server entry point.
 require('dotenv').config();
 
+const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const http = require('http');
@@ -24,10 +25,26 @@ const corsOrigin = process.env.CORS_ORIGIN === '*' || !process.env.CORS_ORIGIN
 app.use(cors({ origin: corsOrigin }));
 app.use(express.json());
 
-// Serve the game's HTML, CSS, and any other static assets from the repo root.
-// The file is named Fractured-Chess-5.html, so the root path is mapped to it
-// explicitly below — everything else in the repo root (if anything) is also
-// servable as a static file (e.g. /favicon.ico) via express.static.
+// ── TEMPORARY DEBUG ROUTE ──────────────────────────────────────
+// Visit /debug-files on your deployed URL to see exactly what files
+// Render sees and where __dirname actually points. Remove this route
+// once the static-file issue is fixed — it's not meant for production.
+app.get('/debug-files', (req, res) => {
+  const repoRoot = path.join(__dirname, '..');
+  let rootFiles = [];
+  let srcFiles = [];
+  try { rootFiles = fs.readdirSync(repoRoot); } catch (e) { rootFiles = ['ERROR: ' + e.message]; }
+  try { srcFiles = fs.readdirSync(__dirname); } catch (e) { srcFiles = ['ERROR: ' + e.message]; }
+  res.json({
+    __dirname,
+    repoRoot,
+    rootFiles,
+    srcFiles,
+    expectedHtmlPath: path.join(repoRoot, 'Fractured-Chess-5.html'),
+    htmlExists: fs.existsSync(path.join(repoRoot, 'Fractured-Chess-5.html')),
+  });
+});
+
 app.use(express.static(path.join(__dirname, '..')));
 
 app.get('/', (req, res) => {
