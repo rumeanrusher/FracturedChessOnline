@@ -25,10 +25,16 @@ const corsOrigin = process.env.CORS_ORIGIN === '*' || !process.env.CORS_ORIGIN
 app.use(cors({ origin: corsOrigin }));
 app.use(express.json());
 
+// ── TEMPORARY: log every single incoming request ──────────────
+// This will print a line to the Render Logs tab for ANY request that
+// reaches this server, no matter what path. If you visit a URL and
+// NOTHING shows up here, the request is not reaching this process at all.
+app.use((req, res, next) => {
+  console.log(`[request] ${req.method} ${req.url}`);
+  next();
+});
+
 // ── TEMPORARY DEBUG ROUTE ──────────────────────────────────────
-// Visit /debug-files on your deployed URL to see exactly what files
-// Render sees and where __dirname actually points. Remove this route
-// once the static-file issue is fixed — it's not meant for production.
 app.get('/debug-files', (req, res) => {
   const repoRoot = path.join(__dirname, '..');
   let rootFiles = [];
@@ -58,7 +64,10 @@ app.use('/api/users', userRoutes);
 app.use('/api/friends', friendRoutes);
 app.use('/api/messages', messageRoutes);
 
-app.use((req, res) => res.status(404).json({ error: 'Not found' }));
+app.use((req, res) => {
+  console.log(`[404] No route matched: ${req.method} ${req.url}`);
+  res.status(404).json({ error: 'Not found', path: req.url });
+});
 app.use((err, req, res, next) => {
   console.error('[unhandled error]', err);
   res.status(500).json({ error: 'Internal server error' });
@@ -70,6 +79,8 @@ const io = new Server(server, {
 attachRealtime(io);
 
 const PORT = process.env.PORT || 3001;
+
+console.log(`[boot] Starting up. PORT env var = ${process.env.PORT}`);
 
 migrate()
   .then(() => {
