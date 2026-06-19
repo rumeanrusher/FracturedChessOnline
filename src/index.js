@@ -64,26 +64,3 @@ migrate()
     console.error('[server] failed to migrate database, exiting:', err);
     process.exit(1);
   });
-app.use((req, res) => res.status(404).json({ error: 'Not found' }));
-app.use((err, req, res, next) => {
-  console.error('[unhandled error]', err);
-  res.status(500).json({ error: 'Internal server error' });
-});
-
-const io = new Server(server, {
-  cors: { origin: corsOrigin, methods: ['GET', 'POST'] },
-});
-attachRealtime(io);
-
-const PORT = process.env.PORT || 3001;
-
-migrate()
-  .then(() => {
-    server.listen(PORT, () => {
-      console.log(`[server] listening on port ${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error('[server] failed to migrate database, exiting:', err);
-    process.exit(1);
-  });
